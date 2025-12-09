@@ -3,7 +3,14 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const createClientOptions = {
+  auth: {
+    persistSession: typeof window !== 'undefined',
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+  },
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, createClientOptions)
 
 export interface Leader {
   id: number
@@ -79,12 +86,12 @@ export async function getLeaders() {
     .from('leaders')
     .select('*')
     .order('order_index')
-  
+
   if (error) {
     console.error('Error fetching leaders:', error)
     return []
   }
-  
+
   return data as Leader[]
 }
 
@@ -94,12 +101,12 @@ export async function updateLeader(id: number, updates: Partial<Leader>) {
     .update(updates)
     .eq('id', id)
     .select()
-  
+
   if (error) {
     console.error('Error updating leader:', error)
     return null
   }
-  
+
   return data[0] as Leader
 }
 
@@ -108,12 +115,12 @@ export async function getOrganization() {
     .from('organization')
     .select('*')
     .order('order_index')
-  
+
   if (error) {
     console.error('Error fetching organization:', error)
     return []
   }
-  
+
   return data as Organization[]
 }
 
@@ -123,12 +130,12 @@ export async function getActiveScripture() {
     .select('*')
     .eq('is_active', true)
     .single()
-  
+
   if (error) {
     console.error('Error fetching scripture:', error)
     return null
   }
-  
+
   return data as Scripture
 }
 
@@ -138,12 +145,12 @@ export async function getSlideImages() {
     .select('*')
     .eq('is_active', true)
     .order('order_index')
-  
+
   if (error) {
     console.error('Error fetching slide images:', error)
     return []
   }
-  
+
   return data as SlideImage[]
 }
 
@@ -152,12 +159,12 @@ export async function verifyAdminPassword(password: string) {
     .from('admin_settings')
     .select('password_hash')
     .single()
-  
+
   if (error) {
     console.error('Error fetching admin settings:', error)
     return false
   }
-  
+
   return data.password_hash === password
 }
 
@@ -166,12 +173,12 @@ export async function getAdminPassword() {
     .from('admin_settings')
     .select('password_hash')
     .single()
-  
+
   if (error) {
     console.error('Error fetching admin password:', error)
     throw new Error('Failed to fetch admin password')
   }
-  
+
   return data.password_hash
 }
 
@@ -181,12 +188,12 @@ export async function updateAdminPassword(newPassword: string) {
     .update({ password_hash: newPassword })
     .eq('id', 1)
     .select()
-  
+
   if (error) {
     console.error('Error updating admin password:', error)
     return false
   }
-  
+
   return true
 }
 
@@ -196,12 +203,12 @@ export async function updateOrganization(id: number, updates: Partial<Organizati
     .update(updates)
     .eq('id', id)
     .select()
-  
+
   if (error) {
     console.error('Error updating organization:', error)
     return null
   }
-  
+
   return data[0] as Organization
 }
 
@@ -210,12 +217,12 @@ export async function addOrganization(organization: Omit<Organization, 'id' | 'c
     .from('organization')
     .insert(organization)
     .select()
-  
+
   if (error) {
     console.error('Error adding organization:', error)
     return null
   }
-  
+
   return data[0] as Organization
 }
 
@@ -224,12 +231,12 @@ export async function deleteOrganization(id: number) {
     .from('organization')
     .delete()
     .eq('id', id)
-  
+
   if (error) {
     console.error('Error deleting organization:', error)
     return false
   }
-  
+
   return true
 }
 
@@ -239,12 +246,12 @@ export async function updateScripture(updates: Partial<Scripture>) {
     .update(updates)
     .eq('is_active', true)
     .select()
-  
+
   if (error) {
     console.error('Error updating scripture:', error)
     return null
   }
-  
+
   return data[0] as Scripture
 }
 
@@ -253,12 +260,12 @@ export async function addSlideImage(slide: Omit<SlideImage, 'id' | 'created_at' 
     .from('slide_images')
     .insert(slide)
     .select()
-  
+
   if (error) {
     console.error('Error adding slide image:', error)
     return null
   }
-  
+
   return data[0] as SlideImage
 }
 
@@ -268,12 +275,12 @@ export async function updateSlideImage(id: number, updates: Partial<SlideImage>)
     .update(updates)
     .eq('id', id)
     .select()
-  
+
   if (error) {
     console.error('Error updating slide image:', error)
     return null
   }
-  
+
   return data[0] as SlideImage
 }
 
@@ -282,12 +289,12 @@ export async function deleteSlideImage(id: number) {
     .from('slide_images')
     .delete()
     .eq('id', id)
-  
+
   if (error) {
     console.error('Error deleting slide image:', error)
     return false
   }
-  
+
   return true
 }
 
@@ -297,12 +304,12 @@ export async function getFacilities() {
     .select('*')
     .eq('is_active', true)
     .order('order_index')
-  
+
   if (error) {
     console.error('Error fetching facilities:', error)
     return []
   }
-  
+
   return data as Facility[]
 }
 
@@ -312,12 +319,12 @@ export async function updateFacility(id: number, updates: Partial<Facility>) {
     .update(updates)
     .eq('id', id)
     .select()
-  
+
   if (error) {
     console.error('Error updating facility:', error)
     return null
   }
-  
+
   return data[0] as Facility
 }
 
@@ -326,12 +333,12 @@ export async function addFacility(facility: Omit<Facility, 'id' | 'created_at' |
     .from('facilities')
     .insert(facility)
     .select()
-  
+
   if (error) {
     console.error('Error adding facility:', error)
     return null
   }
-  
+
   return data[0] as Facility
 }
 
@@ -340,12 +347,12 @@ export async function deleteFacility(id: number) {
     .from('facilities')
     .delete()
     .eq('id', id)
-  
+
   if (error) {
     console.error('Error deleting facility:', error)
     return false
   }
-  
+
   return true
 }
 
@@ -355,12 +362,12 @@ export async function getWorshipGuide() {
     .select('*')
     .eq('is_active', true)
     .single()
-  
+
   if (error) {
     console.error('Error fetching worship guide:', error)
     return null
   }
-  
+
   return data as WorshipGuide
 }
 
@@ -370,12 +377,12 @@ export async function updateWorshipGuide(updates: Partial<WorshipGuide>) {
     .update(updates)
     .eq('is_active', true)
     .select()
-  
+
   if (error) {
     console.error('Error updating worship guide:', error)
     return null
   }
-  
+
   return data[0] as WorshipGuide
 }
 
@@ -391,13 +398,13 @@ export async function updateMultipleOrganizationOrder(organizations: Organizatio
         .from('organization')
         .update({ order_index: update.order_index })
         .eq('id', update.id);
-      
+
       if (error) {
         console.error('Error updating organization order:', error);
         return false;
       }
     }
-    
+
     return true;
   } catch (error) {
     console.error('Error updating multiple organization order:', error);
@@ -417,13 +424,13 @@ export async function updateMultipleSlideOrder(slides: SlideImage[]) {
         .from('slide_images')
         .update({ order_index: update.order_index })
         .eq('id', update.id);
-      
+
       if (error) {
         console.error('Error updating slide order:', error);
         return false;
       }
     }
-    
+
     return true;
   } catch (error) {
     console.error('Error updating multiple slide order:', error);
@@ -443,13 +450,13 @@ export async function updateMultipleFacilityOrder(facilities: Facility[]) {
         .from('facilities')
         .update({ order_index: update.order_index })
         .eq('id', update.id);
-      
+
       if (error) {
         console.error('Error updating facility order:', error);
         return false;
       }
     }
-    
+
     return true;
   } catch (error) {
     console.error('Error updating multiple facility order:', error);

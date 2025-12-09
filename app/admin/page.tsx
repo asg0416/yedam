@@ -110,9 +110,9 @@ export default function AdminPage() {
     const result = editingOrg?.id
       ? await updateOrganization(editingOrg.id, orgData)
       : await addOrganization({
-          ...orgData,
-          order_index: organizations.length + 1,
-        } as Omit<Organization, "id" | "created_at" | "updated_at">);
+        ...orgData,
+        order_index: organizations.length + 1,
+      } as Omit<Organization, "id" | "created_at" | "updated_at">);
 
     if (result) {
       if (editingOrg?.id) {
@@ -153,10 +153,10 @@ export default function AdminPage() {
     const result = editingSlide?.id
       ? await updateSlideImage(editingSlide.id, slideData)
       : await addSlideImage({
-          ...slideData,
-          order_index: slides.length + 1,
-          is_active: true,
-        } as Omit<SlideImage, "id" | "created_at" | "updated_at">);
+        ...slideData,
+        order_index: slides.length + 1,
+        is_active: true,
+      } as Omit<SlideImage, "id" | "created_at" | "updated_at">);
 
     if (result) {
       if (editingSlide?.id) {
@@ -186,10 +186,10 @@ export default function AdminPage() {
     const result = editingFacility?.id
       ? await updateFacility(editingFacility.id, facilityData)
       : await addFacility({
-          ...facilityData,
-          order_index: facilities.length + 1,
-          is_active: true,
-        } as Omit<Facility, "id" | "created_at" | "updated_at">);
+        ...facilityData,
+        order_index: facilities.length + 1,
+        is_active: true,
+      } as Omit<Facility, "id" | "created_at" | "updated_at">);
 
     if (result) {
       if (editingFacility?.id) {
@@ -317,11 +317,10 @@ export default function AdminPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-shrink-0 flex items-center justify-center space-x-1 px-3 py-3 rounded-lg transition-all duration-200 text-sm whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
+              className={`flex-shrink-0 flex items-center justify-center space-x-1 px-3 py-3 rounded-lg transition-all duration-200 text-sm whitespace-nowrap ${activeTab === tab.id
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-800"
+                }`}
             >
               <i className={tab.icon}></i>
               <span>{tab.label}</span>
@@ -586,7 +585,7 @@ function OrganizationModal({
   const [formData, setFormData] = useState({
     name: organization.name,
     description: organization.description,
-    members: organization.members,
+    members: organization.members || [],
   });
 
   useEffect(() => {
@@ -680,7 +679,7 @@ function OrganizationModal({
             </div>
 
             <div className="space-y-4 max-h-60 overflow-y-auto">
-              {formData.members.map((member, index) => (
+              {formData.members?.map((member, index) => (
                 <div
                   key={index}
                   className="grid grid-cols-1 lg:grid-cols-12 gap-4 border border-gray-200 rounded-lg p-4"
@@ -1146,9 +1145,8 @@ function DraggableSlideList({
           onDragStart={(e) => handleDragStart(e, slide)}
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, slide)}
-          className={`bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-all duration-200 ${
-            draggedItem?.id === slide.id ? "opacity-50 scale-95" : ""
-          }`}
+          className={`bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-all duration-200 ${draggedItem?.id === slide.id ? "opacity-50 scale-95" : ""
+            }`}
         >
           <div className="flex items-center space-x-3 mb-4">
             <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-lg cursor-grab active:cursor-grabbing">
@@ -1257,9 +1255,8 @@ function DraggableOrganizationList({
           onDragStart={(e) => handleDragStart(e, org)}
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, org)}
-          className={`bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-all duration-200 ${
-            draggedItem?.id === org.id ? "opacity-50 scale-95" : ""
-          }`}
+          className={`bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-all duration-200 ${draggedItem?.id === org.id ? "opacity-50 scale-95" : ""
+            }`}
         >
           <div className="flex items-center space-x-3 mb-4">
             <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-lg cursor-grab active:cursor-grabbing">
@@ -1277,7 +1274,7 @@ function DraggableOrganizationList({
               </h3>
               <p className="text-gray-600 mb-3">{org.description}</p>
               <div className="text-sm text-gray-500">
-                구성원 {org.members.length}명
+                구성원 {org.members?.length || 0}명
               </div>
             </div>
             <div className="flex space-x-2">
@@ -1366,9 +1363,8 @@ function DraggableFacilityList({
           onDragStart={(e) => handleDragStart(e, facility)}
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, facility)}
-          className={`bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-all duration-200 ${
-            draggedItem?.id === facility.id ? "opacity-50 scale-95" : ""
-          }`}
+          className={`bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-all duration-200 ${draggedItem?.id === facility.id ? "opacity-50 scale-95" : ""
+            }`}
         >
           <div className="flex items-center space-x-3 mb-4">
             <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-lg cursor-grab active:cursor-grabbing">

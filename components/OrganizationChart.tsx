@@ -23,7 +23,7 @@ export default function OrganizationChart({ organizations }: OrganizationChartPr
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -71,9 +71,9 @@ export default function OrganizationChart({ organizations }: OrganizationChartPr
             className="bg-white rounded-xl p-4 shadow-sm text-center cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105"
           >
             <div className={`w-12 h-12 bg-gradient-to-br ${getOrgColor(org.name)} rounded-full mx-auto mb-2 flex items-center justify-center overflow-hidden`}>
-              {org.members.length > 0 && org.members[0].image_url ? (
-                <img 
-                  src={org.members[0].image_url} 
+              {org.members && org.members.length > 0 && org.members[0].image_url ? (
+                <img
+                  src={org.members[0].image_url}
                   alt={org.members[0].name}
                   className="w-full h-full object-cover"
                 />
@@ -89,7 +89,7 @@ export default function OrganizationChart({ organizations }: OrganizationChartPr
 
       {/* 조직 상세 모달 */}
       {selectedOrg && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedOrg(null);
@@ -105,14 +105,14 @@ export default function OrganizationChart({ organizations }: OrganizationChartPr
                 <i className="ri-close-line text-xl"></i>
               </button>
             </div>
-            
+
             <p className="text-gray-600 mb-4 text-sm leading-relaxed">{selectedOrg.description}</p>
-            
+
             <div className="space-y-3">
               <h4 className="font-medium text-gray-800 text-sm">구성원</h4>
-              {selectedOrg.members.map((member, index) => (
-                <div 
-                  key={index} 
+              {selectedOrg.members?.map((member, index) => (
+                <div
+                  key={index}
                   className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-all duration-200"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -123,8 +123,8 @@ export default function OrganizationChart({ organizations }: OrganizationChartPr
                 >
                   <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 hover:scale-105 transition-transform duration-200">
                     {member.image_url ? (
-                      <img 
-                        src={member.image_url} 
+                      <img
+                        src={member.image_url}
                         alt={member.name}
                         className="w-full h-full object-cover"
                       />
@@ -145,7 +145,7 @@ export default function OrganizationChart({ organizations }: OrganizationChartPr
 
       {/* 이미지 확대 모달 */}
       {selectedMemberImage && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedMemberImage(null);

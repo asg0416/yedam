@@ -8,11 +8,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mantine/core": "^8.3.9",
+    "@mantine/hooks": "^8.3.9",
+    "@mantine/notifications": "^8.3.9",
     "@react-google-maps/api": "^2.19.3",
     "@supabase/supabase-js": "^2.45.4",
-    "next": "15.3.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "eslint-config-next": "^16.0.8",
+    "next": "^16.0.8",
+    "postcss-preset-mantine": "^1.18.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
     "recharts": "^3.0.2"
   },
   "devDependencies": {

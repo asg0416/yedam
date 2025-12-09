@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Pacifico } from "next/font/google";
+import { Geist, Geist_Mono, Pacifico } from "next/font/google"; // Keep existing fonts
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import { theme } from '../theme';
 import "./globals.css";
+import '@mantine/core/styles.css';
 
 const pacifico = Pacifico({
   weight: '400',
@@ -77,11 +80,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="ko" suppressHydrationWarning={true}>
+      <head>
+        <ColorSchemeScript />
+        {/* CDN for Remix Icons used in the project */}
+        <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased`}
       >
-        {children}
+        <MantineProvider theme={theme}>
+          {children}
+        </MantineProvider>
       </body>
     </html>
   );

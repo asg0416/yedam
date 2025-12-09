@@ -34,8 +34,7 @@ yarn-error.log*
 # vercel`
 .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
 
-# End of https://www.toptal.com/developers/gitignore/api/nextjs
+# Supabase
+supabase/.branches
+supabase/.temp
