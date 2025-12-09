@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Reorder } from "framer-motion";
+import { Reorder, useDragControls } from "framer-motion";
 import {
   getOrganization,
   getActiveScripture,
@@ -1082,6 +1082,68 @@ function FacilityModal({
   );
 }
 
+// 개별 슬라이드 아이템 (드래그 컨트롤 적용)
+// 개별 슬라이드 아이템 (드래그 컨트롤 적용)
+function SortableSlideItem({ slide, onEdit, onDelete }: { slide: SlideImage; onEdit: (s: SlideImage) => void; onDelete: (id: number) => void }) {
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={slide}
+      id={String(slide.id)}
+      dragListener={false}
+      dragControls={dragControls}
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200 relative select-none"
+      whileDrag={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+    >
+      <div className="flex items-stretch">
+        {/* Drag Handle Spine */}
+        <div
+          className="w-12 flex items-center justify-center bg-gray-50 border-r border-gray-100 cursor-move touch-none text-gray-400 hover:text-teal-600 hover:bg-teal-50 transition-colors flex-shrink-0"
+          onPointerDown={(e) => dragControls.start(e)}
+        >
+          <i className="ri-drag-move-2-line text-xl"></i>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 flex items-center p-4 min-w-0 gap-3 sm:gap-4">
+          <img
+            src={slide.image_url}
+            alt={slide.title}
+            className="w-16 h-16 rounded-lg object-cover bg-gray-100 border border-gray-100 flex-shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-gray-900 truncate text-base mb-0.5">
+              {slide.title}
+            </h3>
+            <p className="text-gray-500 text-sm truncate">
+              {slide.description}
+            </p>
+          </div>
+
+          {/* Actions - Right Aligned */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onEdit(slide)}
+              className="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+            >
+              <i className="ri-edit-line text-lg"></i>
+            </button>
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onDelete(slide.id)}
+              className="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <i className="ri-delete-bin-line text-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Reorder.Item>
+  );
+}
+
 // 드래그 가능한 슬라이드 목록 컴포넌트
 // 드래그 가능한 슬라이드 목록 컴포넌트
 function DraggableSlideList({
@@ -1104,49 +1166,7 @@ function DraggableSlideList({
 
       <Reorder.Group axis="y" values={slides} onReorder={onReorder} className="space-y-4">
         {slides.map((slide) => (
-          <Reorder.Item
-            key={slide.id}
-            value={slide}
-            className="bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-shadow duration-200 relative select-none"
-            whileDrag={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
-          >
-            {/* Visual content */}
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <div className="hidden sm:flex items-center justify-center w-8 self-center text-gray-300">
-                <i className="ri-drag-move-2-line text-xl"></i>
-              </div>
-
-              <img
-                src={slide.image_url}
-                alt={slide.title}
-                className="w-full sm:w-32 h-40 sm:h-24 object-cover rounded-lg flex-shrink-0 bg-gray-100"
-              />
-              <div className="flex-1 min-w-0 py-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">
-                  {slide.title}
-                </h3>
-                <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
-                  {slide.description}
-                </p>
-              </div>
-              <div className="flex flex-row sm:flex-col space-x-2 sm:space-x-0 sm:space-y-2 justify-center">
-                <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => onEdit(slide)}
-                  className="bg-teal-50 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-100 transition-all duration-200 whitespace-nowrap"
-                >
-                  <i className="ri-edit-line"></i>
-                </button>
-                <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => onDelete(slide.id)}
-                  className="bg-red-50 text-red-700 px-3 py-2 rounded-lg hover:bg-red-100 transition-all duration-200 whitespace-nowrap"
-                >
-                  <i className="ri-delete-bin-line"></i>
-                </button>
-              </div>
-            </div>
-          </Reorder.Item>
+          <SortableSlideItem key={slide.id} slide={slide} onEdit={onEdit} onDelete={onDelete} />
         ))}
       </Reorder.Group>
     </div>
@@ -1155,6 +1175,88 @@ function DraggableSlideList({
 
 // 드래그 가능한 조직 목록 컴포넌트
 // 드래그 가능한 조직 목록 컴포넌트
+// 개별 조직 아이템 (드래그 컨트롤 적용)
+// 개별 조직 아이템 (드래그 컨트롤 적용)
+function SortableOrgItem({ org, onEdit, onDelete }: { org: Organization; onEdit: (o: Organization) => void; onDelete: (id: number) => void }) {
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={org}
+      id={String(org.id)}
+      dragListener={false}
+      dragControls={dragControls}
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200 relative select-none"
+      whileDrag={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+    >
+      <div className="flex items-stretch">
+        {/* Drag Handle Spine */}
+        <div
+          className="w-12 flex items-center justify-center bg-gray-50 border-r border-gray-100 cursor-move touch-none text-gray-400 hover:text-teal-600 hover:bg-teal-50 transition-colors flex-shrink-0"
+          onPointerDown={(e) => dragControls.start(e)}
+        >
+          <i className="ri-drag-move-2-line text-xl"></i>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 flex items-center p-4 min-w-0 gap-3 sm:gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-bold text-gray-900 truncate text-base">
+                {org.name}
+              </h3>
+              <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+                총 {org.members?.length || 0}명
+              </span>
+            </div>
+
+            <p className="text-gray-500 text-sm truncate mb-3">
+              {org.description}
+            </p>
+
+            {org.members && org.members.length > 0 && (
+              <div className="flex -space-x-2 overflow-hidden py-1">
+                {org.members.slice(0, 7).map((member, i) => (
+                  <div key={i} className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {member.image_url ? (
+                      <img src={member.image_url} alt={member.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs text-gray-500">{member.name[0]}</span>
+                    )}
+                  </div>
+                ))}
+                {org.members.length > 7 && (
+                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-xs text-gray-500 font-medium">
+                    +{org.members.length - 7}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Actions - Right Aligned */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2 self-start mt-1 sm:self-center sm:mt-0">
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onEdit(org)}
+              className="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+            >
+              <i className="ri-edit-line text-lg"></i>
+            </button>
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onDelete(org.id)}
+              className="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <i className="ri-delete-bin-line text-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Reorder.Item>
+  );
+}
+
 function DraggableOrganizationList({
   organizations,
   onReorder,
@@ -1175,61 +1277,7 @@ function DraggableOrganizationList({
 
       <Reorder.Group axis="y" values={organizations} onReorder={onReorder} className="space-y-4">
         {organizations.map((org) => (
-          <Reorder.Item
-            key={org.id}
-            value={org}
-            className="bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-shadow duration-200 relative select-none"
-            whileDrag={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
-          >
-            <div className="flex justify-between items-start">
-              <div className="flex space-x-4 items-start flex-1">
-                <div className="hidden sm:flex items-center justify-center w-8 pt-1 text-gray-300">
-                  <i className="ri-drag-move-2-line text-xl"></i>
-                </div>
-
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    {org.name}
-                  </h3>
-                  <p className="text-gray-600 mb-3">{org.description}</p>
-                  {org.members && org.members.length > 0 && (
-                    <div className="flex -space-x-2 overflow-hidden mb-2">
-                      {org.members.slice(0, 5).map((member, i) => (
-                        <div key={i} className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center overflow-hidden">
-                          {member.image_url ? <img src={member.image_url} alt={member.name} className="w-full h-full object-cover" /> : <span className="text-xs text-gray-500">{member.name[0]}</span>}
-                        </div>
-                      ))}
-                      {org.members.length > 5 && (
-                        <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-xs text-gray-500 font-medium">
-                          +{org.members.length - 5}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="text-sm text-gray-400">
-                    총 {org.members?.length || 0}명
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-2 ml-4">
-                <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => onEdit(org)}
-                  className="bg-teal-50 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-100 transition-all duration-200"
-                >
-                  <i className="ri-edit-line"></i>
-                </button>
-                <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => onDelete(org.id)}
-                  className="bg-red-50 text-red-700 px-3 py-2 rounded-lg hover:bg-red-100 transition-all duration-200"
-                >
-                  <i className="ri-delete-bin-line"></i>
-                </button>
-              </div>
-            </div>
-          </Reorder.Item>
+          <SortableOrgItem key={org.id} org={org} onEdit={onEdit} onDelete={onDelete} />
         ))}
       </Reorder.Group>
     </div>
@@ -1238,6 +1286,70 @@ function DraggableOrganizationList({
 
 // 드래그 가능한 시설 목록 컴포넌트
 // 드래그 가능한 시설 목록 컴포넌트
+// 개별 시설 아이템 (드래그 컨트롤 적용)
+// 개별 시설 아이템 (드래그 컨트롤 적용)
+function SortableFacilityItem({ facility, onEdit, onDelete }: { facility: Facility; onEdit: (f: Facility) => void; onDelete: (id: number) => void }) {
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={facility}
+      id={String(facility.id)}
+      dragListener={false}
+      dragControls={dragControls}
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200 relative select-none"
+      whileDrag={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+    >
+      <div className="flex items-stretch">
+        {/* Drag Handle Spine */}
+        <div
+          className="w-12 flex items-center justify-center bg-gray-50 border-r border-gray-100 cursor-move touch-none text-gray-400 hover:text-teal-600 hover:bg-teal-50 transition-colors flex-shrink-0"
+          onPointerDown={(e) => dragControls.start(e)}
+        >
+          <i className="ri-drag-move-2-line text-xl"></i>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 flex items-center p-4 min-w-0 gap-3 sm:gap-4">
+          {facility.image_url && (
+            <img
+              src={facility.image_url}
+              alt={facility.name}
+              className="w-16 h-16 rounded-lg object-cover bg-gray-100 border border-gray-100 flex-shrink-0"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-gray-900 truncate text-base mb-0.5">
+              {facility.name}
+            </h3>
+            <p className="text-gray-500 text-sm truncate">
+              {facility.description}
+            </p>
+          </div>
+
+          {/* Actions - Right Aligned */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onEdit(facility)}
+              className="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+            >
+              <i className="ri-edit-line text-lg"></i>
+            </button>
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onDelete(facility.id)}
+              className="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <i className="ri-delete-bin-line text-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Reorder.Item>
+  );
+}
+
 function DraggableFacilityList({
   facilities,
   onReorder,
@@ -1258,50 +1370,7 @@ function DraggableFacilityList({
 
       <Reorder.Group axis="y" values={facilities} onReorder={onReorder} className="space-y-4">
         {facilities.map((facility) => (
-          <Reorder.Item
-            key={facility.id}
-            value={facility}
-            className="bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-shadow duration-200 relative select-none"
-            whileDrag={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
-          >
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <div className="hidden sm:flex items-center justify-center w-8 self-center text-gray-300">
-                <i className="ri-drag-move-2-line text-xl"></i>
-              </div>
-
-              {facility.image_url && (
-                <img
-                  src={facility.image_url}
-                  alt={facility.name}
-                  className="w-full sm:w-32 h-40 sm:h-24 object-cover rounded-lg flex-shrink-0 bg-gray-100"
-                />
-              )}
-              <div className="flex-1 min-w-0 py-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">
-                  {facility.name}
-                </h3>
-                <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
-                  {facility.description}
-                </p>
-              </div>
-              <div className="flex flex-row sm:flex-col space-x-2 sm:space-x-0 sm:space-y-2 justify-center">
-                <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => onEdit(facility)}
-                  className="bg-teal-50 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-100 transition-all duration-200 whitespace-nowrap"
-                >
-                  <i className="ri-edit-line"></i>
-                </button>
-                <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => onDelete(facility.id)}
-                  className="bg-red-50 text-red-700 px-3 py-2 rounded-lg hover:bg-red-100 transition-all duration-200 whitespace-nowrap"
-                >
-                  <i className="ri-delete-bin-line"></i>
-                </button>
-              </div>
-            </div>
-          </Reorder.Item>
+          <SortableFacilityItem key={facility.id} facility={facility} onEdit={onEdit} onDelete={onDelete} />
         ))}
       </Reorder.Group>
     </div>
