@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Reorder } from "framer-motion";
 import {
   getOrganization,
   getActiveScripture,
@@ -219,31 +220,31 @@ export default function AdminPage() {
   const handleUpdateOrganizationOrder = async (
     reorderedOrgs: Organization[]
   ) => {
-    const success = await updateMultipleOrganizationOrder(reorderedOrgs);
-    if (success) {
-      setOrganizations(reorderedOrgs);
-    }
+    // Optimistic Update
+    setOrganizations(reorderedOrgs);
+    // API Call
+    await updateMultipleOrganizationOrder(reorderedOrgs);
   };
 
   const handleUpdateSlideOrder = async (reorderedSlides: SlideImage[]) => {
-    const success = await updateMultipleSlideOrder(reorderedSlides);
-    if (success) {
-      setSlides(reorderedSlides);
-    }
+    // Optimistic Update
+    setSlides(reorderedSlides);
+    // API Call
+    await updateMultipleSlideOrder(reorderedSlides);
   };
 
   const handleUpdateFacilityOrder = async (reorderedFacilities: Facility[]) => {
-    const success = await updateMultipleFacilityOrder(reorderedFacilities);
-    if (success) {
-      setFacilities(reorderedFacilities);
-    }
+    // Optimistic Update
+    setFacilities(reorderedFacilities);
+    // API Call
+    await updateMultipleFacilityOrder(reorderedFacilities);
   };
 
   if (!isClient) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
           <p className="text-gray-600">로딩 중...</p>
         </div>
       </div>
@@ -252,9 +253,9 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
           <p className="text-gray-600">로딩 중...</p>
         </div>
       </div>
@@ -263,11 +264,11 @@ export default function AdminPage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-blue-50 to-white"
+      className="min-h-screen bg-gray-50 from-green-50/50 to-white"
       style={{ wordBreak: "keep-all" }}
     >
       {/* Header */}
-      <div className="bg-white shadow-lg border-b border-blue-100">
+      <div className="bg-white shadow-lg border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <div className="text-center sm:text-left">
@@ -288,7 +289,7 @@ export default function AdminPage() {
               </button>
               <Link
                 href="/"
-                className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition-all duration-200 flex items-center space-x-1 text-sm whitespace-nowrap"
+                className="bg-teal-50 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-100 transition-all duration-200 flex items-center space-x-1 text-sm whitespace-nowrap"
               >
                 <i className="ri-home-line"></i>
                 <span>홈으로</span>
@@ -318,8 +319,8 @@ export default function AdminPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-shrink-0 flex items-center justify-center space-x-1 px-3 py-3 rounded-lg transition-all duration-200 text-sm whitespace-nowrap ${activeTab === tab.id
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-800"
+                ? "bg-white text-teal-600 shadow-sm ring-1 ring-gray-100"
+                : "text-gray-500 hover:text-gray-800"
                 }`}
             >
               <i className={tab.icon}></i>
@@ -444,7 +445,7 @@ export default function AdminPage() {
               </h2>
               <button
                 onClick={() => setEditingScripture(true)}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center space-x-2 whitespace-nowrap"
+                className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-all duration-200 flex items-center space-x-2 whitespace-nowrap"
               >
                 <i className="ri-edit-line"></i>
                 <span>말씀 수정</span>
@@ -527,7 +528,7 @@ export default function AdminPage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="새 비밀번호를 입력하세요"
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent mb-4"
               />
               <button
                 type="button"
@@ -549,7 +550,7 @@ export default function AdminPage() {
               <button
                 onClick={handleUpdatePassword}
                 disabled={saving || !newPassword.trim()}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
+                className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
               >
                 {saving ? "저장 중..." : "저장"}
               </button>
@@ -651,7 +652,7 @@ function OrganizationModal({
                 setFormData({ ...formData, name: e.target.value })
               }
               placeholder="조직명"
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             />
 
             <textarea
@@ -661,7 +662,7 @@ function OrganizationModal({
               }
               placeholder="조직 설명"
               rows={2}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
             />
           </div>
 
@@ -692,7 +693,7 @@ function OrganizationModal({
                         handleMemberChange(index, "role", e.target.value)
                       }
                       placeholder="역할"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div className="lg:col-span-3">
@@ -703,7 +704,7 @@ function OrganizationModal({
                         handleMemberChange(index, "name", e.target.value)
                       }
                       placeholder="이름"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div className="lg:col-span-4">
@@ -711,7 +712,7 @@ function OrganizationModal({
                       type="file"
                       accept="image/*"
                       onChange={(e) => handleImageUpload(index, e)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div className="lg:col-span-1 flex items-center justify-center">
@@ -804,7 +805,7 @@ function ScriptureModal({
             }
             placeholder="성경 구절"
             rows={4}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
           />
 
           <input
@@ -814,7 +815,7 @@ function ScriptureModal({
               setFormData({ ...formData, reference: e.target.value })
             }
             placeholder="성경 출처 (예: 빌립보서 1:6)"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           />
 
           <textarea
@@ -824,7 +825,7 @@ function ScriptureModal({
             }
             placeholder="설명"
             rows={3}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
           />
         </div>
 
@@ -832,7 +833,7 @@ function ScriptureModal({
           <button
             onClick={() => onSave(formData)}
             disabled={saving || !formData.verse.trim()}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
+            className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
           >
             {saving ? "저장 중..." : "저장"}
           </button>
@@ -905,7 +906,7 @@ function SlideModal({
               setFormData({ ...formData, title: e.target.value })
             }
             placeholder="슬라이드 제목"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           />
 
           <div>
@@ -950,7 +951,7 @@ function SlideModal({
             disabled={
               saving || !formData.title.trim() || !formData.image_url.trim()
             }
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
+            className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
           >
             {saving ? "저장 중..." : "저장"}
           </button>
@@ -1021,7 +1022,7 @@ function FacilityModal({
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="시설명"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           />
 
           <textarea
@@ -1081,6 +1082,7 @@ function FacilityModal({
 }
 
 // 드래그 가능한 슬라이드 목록 컴포넌트
+// 드래그 가능한 슬라이드 목록 컴포넌트
 function DraggableSlideList({
   slides,
   onReorder,
@@ -1092,106 +1094,65 @@ function DraggableSlideList({
   onEdit: (slide: SlideImage) => void;
   onDelete: (id: number) => void;
 }) {
-  const [draggedItem, setDraggedItem] = useState<SlideImage | null>(null);
-
-  const handleDragStart = (e: React.DragEvent, slide: SlideImage) => {
-    setDraggedItem(slide);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-
-  const handleDrop = (e: React.DragEvent, targetSlide: SlideImage) => {
-    e.preventDefault();
-
-    if (!draggedItem || draggedItem.id === targetSlide.id) {
-      setDraggedItem(null);
-      return;
-    }
-
-    const reorderedSlides = [...slides];
-    const draggedIndex = reorderedSlides.findIndex(
-      (s) => s.id === draggedItem.id
-    );
-    const targetIndex = reorderedSlides.findIndex(
-      (s) => s.id === targetSlide.id
-    );
-
-    reorderedSlides.splice(draggedIndex, 1);
-    reorderedSlides.splice(targetIndex, 0, draggedItem);
-
-    const updatedSlides = reorderedSlides.map((slide, index) => ({
-      ...slide,
-      order_index: index + 1,
-    }));
-
-    onReorder(updatedSlides);
-    setDraggedItem(null);
-  };
-
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
         <i className="ri-information-line mr-2"></i>
         항목을 드래그해서 순서를 변경할 수 있습니다
       </p>
-      {slides.map((slide) => (
-        <div
-          key={slide.id}
-          draggable
-          onDragStart={(e) => handleDragStart(e, slide)}
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, slide)}
-          className={`bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-all duration-200 ${draggedItem?.id === slide.id ? "opacity-50 scale-95" : ""
-            }`}
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-lg cursor-grab active:cursor-grabbing">
-              <i className="ri-drag-move-line text-gray-400"></i>
-            </div>
-            <span className="text-sm text-gray-500">
-              순서: {slide.order_index}
-            </span>
-          </div>
 
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <img
-              src={slide.image_url}
-              alt={slide.title}
-              className="w-full sm:w-24 h-32 sm:h-16 object-cover rounded-lg flex-shrink-0"
-            />
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1 truncate">
-                {slide.title}
-              </h3>
-              <p className="text-gray-600 text-sm line-clamp-2">
-                {slide.description}
-              </p>
+      <Reorder.Group axis="y" values={slides} onReorder={onReorder} className="space-y-4">
+        {slides.map((slide) => (
+          <Reorder.Item
+            key={slide.id}
+            value={slide}
+            className="bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-shadow duration-200 relative select-none"
+            whileDrag={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+          >
+            {/* Visual content */}
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+              <div className="hidden sm:flex items-center justify-center w-8 self-center text-gray-300">
+                <i className="ri-drag-move-2-line text-xl"></i>
+              </div>
+
+              <img
+                src={slide.image_url}
+                alt={slide.title}
+                className="w-full sm:w-32 h-40 sm:h-24 object-cover rounded-lg flex-shrink-0 bg-gray-100"
+              />
+              <div className="flex-1 min-w-0 py-1">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">
+                  {slide.title}
+                </h3>
+                <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+                  {slide.description}
+                </p>
+              </div>
+              <div className="flex flex-row sm:flex-col space-x-2 sm:space-x-0 sm:space-y-2 justify-center">
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => onEdit(slide)}
+                  className="bg-teal-50 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-100 transition-all duration-200 whitespace-nowrap"
+                >
+                  <i className="ri-edit-line"></i>
+                </button>
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => onDelete(slide.id)}
+                  className="bg-red-50 text-red-700 px-3 py-2 rounded-lg hover:bg-red-100 transition-all duration-200 whitespace-nowrap"
+                >
+                  <i className="ri-delete-bin-line"></i>
+                </button>
+              </div>
             </div>
-            <div className="flex flex-row sm:flex-col space-x-2 sm:space-x-0 sm:space-y-2">
-              <button
-                onClick={() => onEdit(slide)}
-                className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition-all duration-200 whitespace-nowrap"
-              >
-                <i className="ri-edit-line"></i>
-              </button>
-              <button
-                onClick={() => onDelete(slide.id)}
-                className="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition-all duration-200 whitespace-nowrap"
-              >
-                <i className="ri-delete-bin-line"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
+          </Reorder.Item>
+        ))}
+      </Reorder.Group>
     </div>
   );
 }
 
+// 드래그 가능한 조직 목록 컴포넌트
 // 드래그 가능한 조직 목록 컴포넌트
 function DraggableOrganizationList({
   organizations,
@@ -1204,100 +1165,77 @@ function DraggableOrganizationList({
   onEdit: (org: Organization) => void;
   onDelete: (id: number) => void;
 }) {
-  const [draggedItem, setDraggedItem] = useState<Organization | null>(null);
-
-  const handleDragStart = (e: React.DragEvent, org: Organization) => {
-    setDraggedItem(org);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-
-  const handleDrop = (e: React.DragEvent, targetOrg: Organization) => {
-    e.preventDefault();
-
-    if (!draggedItem || draggedItem.id === targetOrg.id) {
-      setDraggedItem(null);
-      return;
-    }
-
-    const reorderedOrgs = [...organizations];
-    const draggedIndex = reorderedOrgs.findIndex(
-      (o) => o.id === draggedItem.id
-    );
-    const targetIndex = reorderedOrgs.findIndex((o) => o.id === targetOrg.id);
-
-    reorderedOrgs.splice(draggedIndex, 1);
-    reorderedOrgs.splice(targetIndex, 0, draggedItem);
-
-    const updatedOrgs = reorderedOrgs.map((org, index) => ({
-      ...org,
-      order_index: index + 1,
-    }));
-
-    onReorder(updatedOrgs);
-    setDraggedItem(null);
-  };
-
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
         <i className="ri-information-line mr-2"></i>
         항목을 드래그해서 순서를 변경할 수 있습니다
       </p>
-      {organizations.map((org) => (
-        <div
-          key={org.id}
-          draggable
-          onDragStart={(e) => handleDragStart(e, org)}
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, org)}
-          className={`bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-all duration-200 ${draggedItem?.id === org.id ? "opacity-50 scale-95" : ""
-            }`}
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-lg cursor-grab active:cursor-grabbing">
-              <i className="ri-drag-move-line text-gray-400"></i>
-            </div>
-            <span className="text-sm text-gray-500">
-              순서: {org.order_index}
-            </span>
-          </div>
 
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {org.name}
-              </h3>
-              <p className="text-gray-600 mb-3">{org.description}</p>
-              <div className="text-sm text-gray-500">
-                구성원 {org.members?.length || 0}명
+      <Reorder.Group axis="y" values={organizations} onReorder={onReorder} className="space-y-4">
+        {organizations.map((org) => (
+          <Reorder.Item
+            key={org.id}
+            value={org}
+            className="bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-shadow duration-200 relative select-none"
+            whileDrag={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+          >
+            <div className="flex justify-between items-start">
+              <div className="flex space-x-4 items-start flex-1">
+                <div className="hidden sm:flex items-center justify-center w-8 pt-1 text-gray-300">
+                  <i className="ri-drag-move-2-line text-xl"></i>
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    {org.name}
+                  </h3>
+                  <p className="text-gray-600 mb-3">{org.description}</p>
+                  {org.members && org.members.length > 0 && (
+                    <div className="flex -space-x-2 overflow-hidden mb-2">
+                      {org.members.slice(0, 5).map((member, i) => (
+                        <div key={i} className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center overflow-hidden">
+                          {member.image_url ? <img src={member.image_url} alt={member.name} className="w-full h-full object-cover" /> : <span className="text-xs text-gray-500">{member.name[0]}</span>}
+                        </div>
+                      ))}
+                      {org.members.length > 5 && (
+                        <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-xs text-gray-500 font-medium">
+                          +{org.members.length - 5}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="text-sm text-gray-400">
+                    총 {org.members?.length || 0}명
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-2 ml-4">
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => onEdit(org)}
+                  className="bg-teal-50 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-100 transition-all duration-200"
+                >
+                  <i className="ri-edit-line"></i>
+                </button>
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => onDelete(org.id)}
+                  className="bg-red-50 text-red-700 px-3 py-2 rounded-lg hover:bg-red-100 transition-all duration-200"
+                >
+                  <i className="ri-delete-bin-line"></i>
+                </button>
               </div>
             </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => onEdit(org)}
-                className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition-all duration-200"
-              >
-                <i className="ri-edit-line"></i>
-              </button>
-              <button
-                onClick={() => onDelete(org.id)}
-                className="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition-all duration-200"
-              >
-                <i className="ri-delete-bin-line"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
+          </Reorder.Item>
+        ))}
+      </Reorder.Group>
     </div>
   );
 }
 
+// 드래그 가능한 시설 목록 컴포넌트
 // 드래그 가능한 시설 목록 컴포넌트
 function DraggableFacilityList({
   facilities,
@@ -1310,104 +1248,61 @@ function DraggableFacilityList({
   onEdit: (facility: Facility) => void;
   onDelete: (id: number) => void;
 }) {
-  const [draggedItem, setDraggedItem] = useState<Facility | null>(null);
-
-  const handleDragStart = (e: React.DragEvent, facility: Facility) => {
-    setDraggedItem(facility);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-
-  const handleDrop = (e: React.DragEvent, targetFacility: Facility) => {
-    e.preventDefault();
-
-    if (!draggedItem || draggedItem.id === targetFacility.id) {
-      setDraggedItem(null);
-      return;
-    }
-
-    const reorderedFacilities = [...facilities];
-    const draggedIndex = reorderedFacilities.findIndex(
-      (f) => f.id === draggedItem.id
-    );
-    const targetIndex = reorderedFacilities.findIndex(
-      (f) => f.id === targetFacility.id
-    );
-
-    reorderedFacilities.splice(draggedIndex, 1);
-    reorderedFacilities.splice(targetIndex, 0, draggedItem);
-
-    const updatedFacilities = reorderedFacilities.map((facility, index) => ({
-      ...facility,
-      order_index: index + 1,
-    }));
-
-    onReorder(updatedFacilities);
-    setDraggedItem(null);
-  };
-
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
         <i className="ri-information-line mr-2"></i>
         항목을 드래그해서 순서를 변경할 수 있습니다
       </p>
-      {facilities.map((facility) => (
-        <div
-          key={facility.id}
-          draggable
-          onDragStart={(e) => handleDragStart(e, facility)}
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, facility)}
-          className={`bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-all duration-200 ${draggedItem?.id === facility.id ? "opacity-50 scale-95" : ""
-            }`}
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-lg cursor-grab active:cursor-grabbing">
-              <i className="ri-drag-move-line text-gray-400"></i>
-            </div>
-            <span className="text-sm text-gray-500">
-              순서: {facility.order_index}
-            </span>
-          </div>
 
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            {facility.image_url && (
-              <img
-                src={facility.image_url}
-                alt={facility.name}
-                className="w-full sm:w-24 h-32 sm:h-16 object-cover rounded-lg flex-shrink-0"
-              />
-            )}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1 truncate">
-                {facility.name}
-              </h3>
-              <p className="text-gray-600 text-sm line-clamp-2">
-                {facility.description}
-              </p>
+      <Reorder.Group axis="y" values={facilities} onReorder={onReorder} className="space-y-4">
+        {facilities.map((facility) => (
+          <Reorder.Item
+            key={facility.id}
+            value={facility}
+            className="bg-white rounded-xl p-6 shadow-sm border cursor-move hover:shadow-lg transition-shadow duration-200 relative select-none"
+            whileDrag={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+          >
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+              <div className="hidden sm:flex items-center justify-center w-8 self-center text-gray-300">
+                <i className="ri-drag-move-2-line text-xl"></i>
+              </div>
+
+              {facility.image_url && (
+                <img
+                  src={facility.image_url}
+                  alt={facility.name}
+                  className="w-full sm:w-32 h-40 sm:h-24 object-cover rounded-lg flex-shrink-0 bg-gray-100"
+                />
+              )}
+              <div className="flex-1 min-w-0 py-1">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">
+                  {facility.name}
+                </h3>
+                <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+                  {facility.description}
+                </p>
+              </div>
+              <div className="flex flex-row sm:flex-col space-x-2 sm:space-x-0 sm:space-y-2 justify-center">
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => onEdit(facility)}
+                  className="bg-teal-50 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-100 transition-all duration-200 whitespace-nowrap"
+                >
+                  <i className="ri-edit-line"></i>
+                </button>
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => onDelete(facility.id)}
+                  className="bg-red-50 text-red-700 px-3 py-2 rounded-lg hover:bg-red-100 transition-all duration-200 whitespace-nowrap"
+                >
+                  <i className="ri-delete-bin-line"></i>
+                </button>
+              </div>
             </div>
-            <div className="flex flex-row sm:flex-col space-x-2 sm:space-x-0 sm:space-y-2">
-              <button
-                onClick={() => onEdit(facility)}
-                className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition-all duration-200 whitespace-nowrap"
-              >
-                <i className="ri-edit-line"></i>
-              </button>
-              <button
-                onClick={() => onDelete(facility.id)}
-                className="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition-all duration-200 whitespace-nowrap"
-              >
-                <i className="ri-delete-bin-line"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
+          </Reorder.Item>
+        ))}
+      </Reorder.Group>
     </div>
   );
 }
