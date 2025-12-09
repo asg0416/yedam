@@ -28,6 +28,7 @@ import {
   Facility,
 } from "../../lib/supabase";
 import Link from "next/link";
+import { Loader } from "@mantine/core";
 
 export default function AdminPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -244,7 +245,7 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+          <Loader color="green" type="dots" size="lg" className="mx-auto mb-4" />
           <p className="text-gray-600">로딩 중...</p>
         </div>
       </div>
@@ -255,7 +256,7 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+          <Loader color="green" type="dots" size="lg" className="mx-auto mb-4" />
           <p className="text-gray-600">로딩 중...</p>
         </div>
       </div>

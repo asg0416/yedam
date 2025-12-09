@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Organization } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Loader } from '@mantine/core';
 
 interface OrganizationChartProps {
   organizations: Organization[];
@@ -29,21 +30,20 @@ export default function OrganizationChart({ organizations }: OrganizationChartPr
     };
   }, [selectedOrg, selectedMemberImage]);
 
-  const getOrgIcon = (name: string) => {
-    if (name.includes('목사')) return '👨‍💼';
-    if (name.includes('임원')) return '👥';
-    if (name.includes('새가족')) return '🤝';
-    if (name.includes('가디언')) return '🛡️';
-    if (name.includes('블레싱')) return '👶';
-    return '👫';
+  const getOrgTheme = (name: string) => {
+    if (name.includes('가디언')) return { icon: '🛡️', bg: 'bg-indigo-50', border: 'border-indigo-100', text: 'text-indigo-600' };
+    if (name.includes('목사')) return { icon: '✝️', bg: 'bg-gray-50', border: 'border-gray-100', text: 'text-gray-600' };
+    if (name.includes('임원')) return { icon: '👑', bg: 'bg-blue-50', border: 'border-blue-100', text: 'text-blue-600' };
+    if (name.includes('새가족')) return { icon: '🌱', bg: 'bg-green-50', border: 'border-green-100', text: 'text-green-600' };
+    if (name.includes('양육')) return { icon: '📖', bg: 'bg-orange-50', border: 'border-orange-100', text: 'text-orange-600' };
+    if (name.includes('블레싱')) return { icon: '👶', bg: 'bg-pink-50', border: 'border-pink-100', text: 'text-pink-600' };
+    return { icon: '👥', bg: 'bg-gray-50', border: 'border-gray-100', text: 'text-gray-400' };
   };
 
   if (!isClient) {
     return (
-      <div className="grid grid-cols-2 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-gray-100 rounded-xl p-8 animate-pulse h-48"></div>
-        ))}
+      <div className="flex justify-center items-center h-48">
+        <Loader color="green" type="dots" size="xl" />
       </div>
     );
   }
@@ -51,43 +51,46 @@ export default function OrganizationChart({ organizations }: OrganizationChartPr
   return (
     <>
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-        {organizations.map((org, index) => (
-          <motion.div
-            key={org.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            onClick={() => setSelectedOrg(org)}
-            className="group bg-white rounded-xl md:rounded-2xl p-6 md:p-8 border border-gray-100 cursor-pointer hover:border-gray-300 hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center h-full active:scale-95 transition-transform"
-          >
+        {organizations.map((org, index) => {
+          const theme = getOrgTheme(org.name);
+          return (
+            <motion.div
+              key={org.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              onClick={() => setSelectedOrg(org)}
+              className="group bg-white rounded-xl md:rounded-2xl p-6 md:p-8 border border-gray-100 cursor-pointer hover:border-gray-300 hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center h-full active:scale-95 transition-transform"
+            >
 
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gray-50 mb-4 md:mb-6 flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
-              {org.members && org.members.length > 0 && org.members[0].image_url ? (
-                <img
-                  src={org.members[0].image_url}
-                  alt={org.members[0].name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-2xl text-gray-400">
-                  <i className="ri-team-line"></i>
-                </span>
-              )}
-            </div>
+              <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full mb-4 md:mb-6 flex items-center justify-center overflow-hidden border shadow-sm group-hover:shadow-md transition-all ${theme.bg} ${theme.border}`}>
+                {org.members && org.members.length > 0 && org.members[0].image_url ? (
+                  <img
+                    src={org.members[0].image_url}
+                    alt={org.members[0].name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className={`text-3xl ${theme.text}`}>
+                    {theme.icon}
+                  </span>
+                )}
+              </div>
 
-            <h4 className="text-lg md:text-xl font-bold text-gray-900 mb-2 group-hover:text-green-600 transition-colors break-keep">
-              {org.name}
-            </h4>
-            <p className="text-xs md:text-sm text-gray-500 line-clamp-2 leading-relaxed mb-4 break-keep">
-              {org.description}
-            </p>
+              <h4 className="text-lg md:text-xl font-bold text-gray-900 mb-2 group-hover:text-green-600 transition-colors break-keep">
+                {org.name}
+              </h4>
+              <p className="text-xs md:text-sm text-gray-500 line-clamp-2 leading-relaxed mb-4 break-keep">
+                {org.description}
+              </p>
 
-            <div className="mt-auto flex items-center text-xs md:text-sm font-medium text-gray-400 group-hover:text-gray-900 transition-colors">
-              <span>자세히 보기</span>
-              <i className="ri-arrow-right-line ml-1 md:ml-2 transform group-hover:translate-x-1 transition-transform"></i>
-            </div>
-          </motion.div>
-        ))}
+              <div className="mt-auto flex items-center text-xs md:text-sm font-medium text-gray-400 group-hover:text-gray-900 transition-colors">
+                <span>자세히 보기</span>
+                <i className="ri-arrow-right-line ml-1 md:ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Detail Modal */}
