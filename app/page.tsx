@@ -1,7 +1,8 @@
 'use client';
 
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import {
   getOrganization,
   getActiveScripture,
@@ -18,7 +19,6 @@ import {
   Container,
   Title,
   Text,
-  Card,
   SimpleGrid,
   Group,
   ThemeIcon,
@@ -29,10 +29,30 @@ import {
   Center,
   Loader,
   Box,
-  Badge,
-  ActionIcon
+  ActionIcon,
+  Paper,
+  Drawer,
+  Burger,
+  Divider
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+
+// Animation wrapper component
+function FadeInUp({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      transition={{ duration: 0.8, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 export default function Home() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -46,15 +66,13 @@ export default function Home() {
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [openedFacility, { open: openFacility, close: closeFacility }] = useDisclosure(false);
   const [openedSchedule, { open: openSchedule, close: closeSchedule }] = useDisclosure(false);
-
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const [openedMenu, { toggle: toggleMenu, close: closeMenu }] = useDisclosure(false);
 
   useEffect(() => {
     setIsClient(true);
     loadData();
   }, []);
 
-  // Update modal state when facility is selected
   useEffect(() => {
     if (selectedFacility) {
       openFacility();
@@ -75,7 +93,7 @@ export default function Home() {
       setFacilities(facilityData);
     } catch (error) {
       console.error('데이터 로딩 실패:', error);
-      // Mock data for UI verification
+      // Fallback data
       setOrganizations([
         {
           id: 1, name: "임원", description: "예닮부를 섬기는 임원진", order_index: 1, created_at: "", updated_at: "", members: [
@@ -88,11 +106,11 @@ export default function Home() {
         id: 1,
         verse: "사랑하는 자들아 우리가 서로 사랑하자 사랑은 하나님께 속한 것이니 (요일 4:7)",
         reference: "요한일서 4장 7절",
-        description: "이번 주 암송 구절입니다 화이팅!",
+        description: "이번 주 암송 구절입니다",
         is_active: true, created_at: "", updated_at: ""
       });
       setSlides([
-        { id: 1, title: "환영합니다", image_url: "https://placehold.co/800x400/eebefa/white?text=Welcome", description: "환영이미지", order_index: 1, is_active: true, created_at: "", updated_at: "" }
+        { id: 1, title: "환영합니다", image_url: "https://placehold.co/1200x600/eebefa/white?text=Welcome", description: "환영이미지", order_index: 1, is_active: true, created_at: "", updated_at: "" }
       ]);
       setFacilities([
         { id: 1, name: "1층 유년부실", description: "예배 및 조별모임 장소", image_url: "https://placehold.co/600x400", order_index: 1, is_active: true, created_at: "", updated_at: "" },
@@ -105,275 +123,479 @@ export default function Home() {
     }
   };
 
-  if (!isClient) {
-    return (
-      <Center h="100vh" bg="gray.0">
-        <Loader size="lg" />
-      </Center>
-    );
-  }
-
   return (
-    <Box bg="gray.0" pb="xl" style={{ wordBreak: 'keep-all' }}>
-      {/* Header */}
-      <Box component="header" pt={60} pb={40} bg="white">
-        <Container size="lg">
-          <Center>
-            <Stack align="center" gap="md">
-              <Box>
-                <Title order={1} c="dark.8" style={{ letterSpacing: '2px' }}>
-                  예닮부
-                </Title>
-                <Box h={4} w={64} bg="blue.5" mx="auto" mt="sm" style={{ borderRadius: '999px' }} />
-              </Box>
-              <Text c="dimmed" size="lg" ta="center" lh={1.6}>
-                장전제일교회의 예수님을 닮아가는<br />
-                부부 공동체에 오신 걸 환영합니다 ❤️
+    <Box bg="white" pb={120} style={{ wordBreak: 'keep-all', fontFamily: 'var(--font-geist-sans)' }}>
+      {/* Navigation / Header */}
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100"
+      >
+        <Container size="xl" h={80} className="flex items-center justify-between">
+          <Link href="/" className="no-underline group">
+            <Group gap="xs">
+              <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white font-serif italic text-lg group-hover:bg-gray-800 transition-colors">Y</div>
+              <Text fw={600} size="lg" c="dark.9" style={{ letterSpacing: '-0.5px' }}>예닮부</Text>
+            </Group>
+          </Link>
+
+          <Group gap="xl" visibleFrom="sm">
+            {[
+              { label: '소개', id: 'intro' },
+              { label: '주요활동', id: 'activities' },
+              { label: '조직도', id: 'organization' },
+              { label: '시설안내', id: 'facilities' },
+            ].map((item) => (
+              <Text
+                key={item.id}
+                component="a"
+                href={`#${item.id}`}
+                size="sm"
+                fw={500}
+                c="gray.7"
+                className="hover:text-black transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                {item.label}
               </Text>
+            ))}
+            <Button variant="light" color="lime" size="xs" radius="xl" onClick={openSchedule}>
+              예배시간표
+            </Button>
+          </Group>
+
+          <Group hiddenFrom="sm">
+            <Burger opened={openedMenu} onClick={toggleMenu} size="sm" />
+            <Drawer
+              opened={openedMenu}
+              onClose={closeMenu}
+              position="right"
+              size="xs"
+              title={<Text fw={700} size="lg">메뉴</Text>}
+            >
+              <Stack gap="md" mt="md">
+                {[
+                  { label: '소개', id: 'intro' },
+                  { label: '주요활동', id: 'activities' },
+                  { label: '조직도', id: 'organization' },
+                  { label: '시설안내', id: 'facilities' },
+                ].map((item) => (
+                  <Text
+                    key={item.id}
+                    component="a"
+                    href={`#${item.id}`}
+                    size="md"
+                    fw={500}
+                    c="dark"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                      closeMenu();
+                    }}
+                  >
+                    {item.label}
+                  </Text>
+                ))}
+                <Divider my="sm" />
+                <Button variant="light" color="lime" fullWidth radius="md" onClick={() => {
+                  openSchedule();
+                  closeMenu();
+                }}>
+                  예배시간표 보기
+                </Button>
+              </Stack>
+            </Drawer>
+          </Group>
+        </Container>
+      </motion.nav>
+
+      {/* Hero Section */}
+      <Box pt={80}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+        >
+          <ImageSlider slides={slides} />
+        </motion.div>
+      </Box>
+
+      {/* Intro Section */}
+      <Container size="md" py={{ base: 80, md: 120 }} id="intro">
+        <FadeInUp>
+          <Stack align="center" gap="xl">
+            <Text
+              variant="gradient"
+              gradient={{ from: 'lime.5', to: 'green.6', deg: 45 }}
+              fz={{ base: 30, md: 54 }}
+              fw={800}
+              ta="center"
+              style={{ letterSpacing: '-1.5px', lineHeight: 1.15, filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.1))' }}
+            >
+              예수님을 닮아가는<br />
+              아름다운 부부 공동체
+            </Text>
+
+            <Box w={60} h={4} bg="black" my="md" />
+
+            <Text c="dimmed" size="xl" ta="center" lh={1.8} maw={600} fz={{ base: 'md', md: 'xl' }}>
+              장전제일교회 예닮부는 부부가 함께 신앙 안에서 성장하며
+              서로를 세워가는 따뜻한 공동체입니다.
+            </Text>
+          </Stack>
+        </FadeInUp>
+      </Container>
+
+
+      {/* ... (Middle sections omitted for brevity in search replacement, but effectively I need to target the Modal at the bottom and the Intro at the top. I'll split this if needed, but the file is small enough I might just target specific blocks if I can unique identify them. Actually, let's stick to doing 2 edits if they are far apart, or I'll use the replace tool carefully.) */}
+
+
+      <Modal
+        opened={openedSchedule}
+        onClose={closeSchedule}
+        centered
+        size="lg"
+        radius="xl"
+        withCloseButton={false}
+        padding={0}
+        overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
+      >
+        <Paper p="xl" radius="xl" bg="white" h="80vh" style={{ display: 'flex', flexDirection: 'column' }}>
+          <Group justify="space-between" mb="lg" flex={0}>
+            <Title order={3} fw={700}>전체 예배 시간표</Title>
+            <ActionIcon onClick={closeSchedule} variant="subtle" color="gray" size="lg">
+              <i className="ri-close-line text-2xl"></i>
+            </ActionIcon>
+          </Group>
+
+          <Box style={{ flex: 1, overflowY: 'auto' }} pr="sm">
+            <Stack gap="xl">
+              {/* Sunday Worship */}
+              <Box>
+                <Text fw={700} c="green.7" mb="sm" size="lg">주일 예배</Text>
+                <Stack gap="xs">
+                  {[
+                    { time: '오전 09:30', title: '1부 예배', location: '본당(본관 2층)', icon: '☀️' },
+                    { time: '오전 11:30', title: '2부 예배', location: '본당(본관 2층)', icon: '⛪' },
+                    { time: '오후 2:00', title: '달리다굼부 (장애인부)', location: '쉴만한물가(본관 1층)', icon: '🌅' },
+                    { time: '오후 2:00', title: '예닮부 (청년부부) 예배 및 모임', location: '유년부실(본관 1층)', icon: '예닮부' },
+                    { time: '오후 3:30', title: '3부 예배', location: '본당(본관 2층)', icon: '🌅' },
+                  ].map((item, i) => (
+                    <Group key={i} p="md" bg={item.icon === '예닮부' ? 'green.0' : 'gray.0'} style={{ borderRadius: '12px' }} justify="space-between">
+                      <Group>
+                        <Text fw={700} size="sm">{item.time}</Text>
+                        <Text size="sm">{item.title}</Text>
+                      </Group>
+                      <Text size="xs" c="dimmed">{item.location}</Text>
+                    </Group>
+                  ))}
+                </Stack>
+              </Box>
+
+              {/* Weekday Worship */}
+              <Box>
+                <Text fw={700} c="green.7" mb="sm" size="lg">주중 예배</Text>
+                <Stack gap="xs">
+                  {[
+                    { time: '매일 새벽 05:30', title: '새벽예배', location: '본당(본관 2층)', icon: '🙏' },
+                    { time: '수요 저녁 07:00', title: '수요예배', location: '본당(본관 2층)', icon: '📖' },
+                    { time: '금요 저녁 09:00', title: '금요기도회(하열밤)', location: '본당(본관 2층)', icon: '🔥' },
+                  ].map((item, i) => (
+                    <Group key={i} p="md" bg="gray.0" style={{ borderRadius: '12px' }} justify="space-between">
+                      <Group>
+                        <Text fw={700} size="sm">{item.time}</Text>
+                        <Text size="sm">{item.title}</Text>
+                      </Group>
+                      <Text size="xs" c="dimmed">{item.location}</Text>
+                    </Group>
+                  ))}
+                </Stack>
+              </Box>
+
+              {/* Church School */}
+              <Box>
+                <Text fw={700} c="green.7" mb="sm" size="lg">주일 학교</Text>
+                <Stack gap="xs">
+                  {[
+                    { time: '오전 09:30', title: '청소년부 (중학교, 고등학교, 14~19세)', location: '교육관 (3층)' },
+                    { time: '오전 11:30', title: '초등부 (초등학교 4~6학년, 11~13세)', location: '교육관 (3층)' },
+                    { time: '오전 11:30', title: '유년부 (초등학교 1~3학년, 8~10세)', location: '유년부실' },
+                    { time: '오전 11:30', title: '유치부 (4~7세)', location: '유치부실' },
+                    { time: '오후 02:00', title: '청년연합예배', location: '본당(본관 2층)' },
+                    { time: '오후 03:30', title: '청년1부 (늘사랑, 20~26세)', location: '드림하우스 (6층)' },
+                    { time: '오후 03:30', title: '청년2부 (갈렙, 27세 이상 미혼청년)', location: '3예배실(본관지하1층)' },
+                  ].map((item, i) => (
+                    <Group key={i} p="md" bg="gray.0" style={{ borderRadius: '12px' }} justify="space-between">
+                      <Group>
+                        <Text fw={700} size="sm">{item.time}</Text>
+                        <Text size="sm">{item.title}</Text>
+                      </Group>
+                      <Text size="xs" c="dimmed">{item.location}</Text>
+                    </Group>
+                  ))}
+                </Stack>
+              </Box>
             </Stack>
-          </Center>
+          </Box>
+        </Paper>
+      </Modal>
+
+
+      {/* Major Activities */}
+      <Box bg="gray.0" py={{ base: 80, md: 120 }} id="activities">
+        <Container size="xl">
+          <FadeInUp>
+            <Group justify="space-between" mb={{ base: 40, md: 60 }} align="end">
+              <Title order={2} fz={{ base: 24, md: 32 }} fw={700} style={{ letterSpacing: '-1px' }}>주요 활동</Title>
+              <Text c="dimmed" fz="sm">함께하는 즐거움이 있습니다</Text>
+            </Group>
+          </FadeInUp>
+
+          <SimpleGrid cols={{ base: 1, md: 3 }} spacing={{ base: 20, md: 40 }}>
+            {/* Main Activity Card - Special Design */}
+            <FadeInUp delay={0.1}>
+              <Paper
+                p={{ base: 30, md: 40 }}
+                radius="xl"
+                h="100%"
+                className="group hover:-translate-y-2 transition-transform duration-500 ease-out"
+                style={{
+                  background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+                  boxShadow: '0 10px 40px -10px rgba(0,0,0,0.05)'
+                }}
+              >
+                <ThemeIcon size={60} radius="xl" color="dark" variant="filled" mb="xl">
+                  <span style={{ fontSize: '28px' }}>📅</span>
+                </ThemeIcon>
+                <Text fz={{ base: 20, md: 24 }} fw={700} mb="md">예배 및 조별모임</Text>
+                <Text c="dimmed" lh={1.6} mb="xl" fz={{ base: 'sm', md: 'md' }}>
+                  매주 주일 2부 예배 후,<br />
+                  같은 나이대의 부부들이 모여<br />
+                  삶과 신앙을 나눕니다.
+                </Text>
+
+                <Stack gap="xs" mt="auto">
+                  <Group c="dimmed" gap="xs">
+                    <i className="ri-map-pin-line"></i>
+                    <Text size="sm">1층 유년부실</Text>
+                  </Group>
+                  <Group c="dimmed" gap="xs">
+                    <i className="ri-time-line"></i>
+                    <Text size="sm">주일 오후 2시</Text>
+                  </Group>
+                </Stack>
+              </Paper>
+            </FadeInUp>
+
+            {/* Grid of smaller activities */}
+            <Stack gap={20}>
+              {[
+                { icon: '🏠', title: '가정예배', desc: '믿음의 가정 세우기', color: 'green.1' },
+                { icon: '🙏', title: '기도모임', desc: '형제, 자매별 중보기도', color: 'grape.1' },
+              ].map((item, i) => (
+                <FadeInUp key={i} delay={0.2 + (i * 0.1)}>
+                  <Paper
+                    p="xl"
+                    radius="xl"
+                    bg="white"
+                    className="hover:shadow-lg transition-shadow duration-300"
+                    style={{ border: '1px solid #f1f3f5' }}
+                  >
+                    <Group>
+                      <ThemeIcon size={48} radius="xl" bg={item.color} c="dark">
+                        <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                      </ThemeIcon>
+                      <Box>
+                        <Text fw={600} size="lg">{item.title}</Text>
+                        <Text size="sm" c="dimmed">{item.desc}</Text>
+                      </Box>
+                    </Group>
+                  </Paper>
+                </FadeInUp>
+              ))}
+            </Stack>
+
+            <Stack gap={20}>
+              {[
+                { icon: '🤝', title: '세겹줄 모임', desc: '소그룹별 깊은 교제', color: 'orange.1' },
+                { icon: '⛪', title: '아웃리치', desc: '지역교회 섬김 활동', color: 'pink.1' }
+              ].map((item, i) => (
+                <FadeInUp key={i} delay={0.3 + (i * 0.1)}>
+                  <Paper
+                    p="xl"
+                    radius="xl"
+                    bg="white"
+                    className="hover:shadow-lg transition-shadow duration-300"
+                    style={{ border: '1px solid #f1f3f5' }}
+                  >
+                    <Group>
+                      <ThemeIcon size={48} radius="xl" bg={item.color} c="dark">
+                        <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                      </ThemeIcon>
+                      <Box>
+                        <Text fw={600} size="lg">{item.title}</Text>
+                        <Text size="sm" c="dimmed">{item.desc}</Text>
+                      </Box>
+                    </Group>
+                  </Paper>
+                </FadeInUp>
+              ))}
+            </Stack>
+          </SimpleGrid>
         </Container>
       </Box>
 
-      {/* Image Slider */}
-      <Container size="lg" my="md" ref={sliderRef}>
-        <Box style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-          <ImageSlider slides={slides} />
-        </Box>
-      </Container>
-
-      {/* Major Activities */}
-      <Container size="lg" py="xl">
-        <Title order={2} ta="center" mb="xl">주요 활동</Title>
-
-        {/* Main Activity */}
-        <Card shadow="sm" padding="lg" radius="md" mb="md" withBorder>
-          <Group wrap="nowrap" align="center">
-            <ThemeIcon size={64} radius="xl" variant="light" color="blue">
-              <span style={{ fontSize: '24px' }}>📅</span>
-            </ThemeIcon>
-            <Box style={{ flex: 1 }}>
-              <Text fw={500} size="lg" mb={4}>예배 및 조별모임</Text>
-              <Text size="sm" c="dimmed" mb="xs">주일 2부 예배 후 따뜻한 교제</Text>
-              <Stack gap={4}>
-                <Group gap={6}>
-                  <i className="ri-map-pin-line" style={{ color: '#909296' }}></i>
-                  <Text size="xs" c="dimmed">1층 유년부실</Text>
-                </Group>
-                <Group gap={6}>
-                  <i className="ri-time-line" style={{ color: '#909296' }}></i>
-                  <Text size="xs" c="dimmed">주일 오후 2시</Text>
-                </Group>
+      {/* Scripture Section - Parallax style */}
+      {scripture && (
+        <FadeInUp>
+          <Box py={160} bg="dark.9" pos="relative" style={{ overflow: 'hidden' }}>
+            <Box className="absolute inset-0 opacity-10"
+              style={{
+                backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")',
+                backgroundSize: '100px'
+              }}
+            />
+            <Container size="md" pos="relative" style={{ zIndex: 1 }}>
+              <Stack align="center" gap="xl">
+                <Text c="gray.5" fz="sm" fw={600} tt="uppercase" style={{ letterSpacing: '4px' }}>THEME VERSE</Text>
+                <Text
+                  c="white"
+                  ta="center"
+                  fz={{ base: 24, md: 36 }}
+                  fw={300}
+                  lh={1.6}
+                  style={{ fontFamily: 'serif', fontStyle: 'italic' }}
+                >
+                  "{scripture.verse}"
+                </Text>
+                <Text c="dimmed">({scripture.reference})</Text>
               </Stack>
-            </Box>
-          </Group>
-        </Card>
-
-        {/* Other Activities Grid */}
-        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
-          {[
-            { icon: '🏠', title: '가정예배', desc: '믿음의 가정 세우기', color: 'green' },
-            { icon: '🙏', title: '기도모임', desc: '형제, 자매별 기도 모임', color: 'grape' },
-            { icon: '🤝', title: '세겹줄 모임', desc: '소그룹별 깊은 교제', color: 'orange' },
-            { icon: '⛪', title: '아웃리치', desc: '지역교회 섬김', color: 'pink' }
-          ].map((item, index) => (
-            <Card key={index} shadow="sm" padding="lg" radius="md" withBorder>
-              <Center mb="sm">
-                <ThemeIcon size={48} radius="xl" variant="light" color={item.color}>
-                  <span style={{ fontSize: '20px' }}>{item.icon}</span>
-                </ThemeIcon>
-              </Center>
-              <Text fw={500} size="sm" ta="center" mb={4}>{item.title}</Text>
-              <Text size="xs" c="dimmed" ta="center">{item.desc}</Text>
-            </Card>
-          ))}
-        </SimpleGrid>
-      </Container>
-
+            </Container>
+          </Box>
+        </FadeInUp>
+      )}
 
       {/* Organization Chart */}
-      <Container size="lg" py="xl">
-        <Title order={2} ta="center" mb="sm">예닮부 조직도</Title>
-        <Text c="dimmed" ta="center" size="sm" mb="xl">
-          예닮부를 섬기는 리더들을 소개합니다<br />
-          각 팀을 클릭하면 자세한 정보를 볼 수 있어요 😊
-        </Text>
+      <Container size="xl" py={120} id="organization">
+        <FadeInUp>
+          <Stack align="center" mb={80}>
+            <Title order={2} fz={32} fw={700} style={{ letterSpacing: '-1px' }}>조직도</Title>
+            <Text c="dimmed">예닮부를 섬기는 임원 및 리더</Text>
+          </Stack>
+        </FadeInUp>
 
         {loading ? (
           <Center py="xl">
-            <Loader />
+            <Loader color="dark" />
           </Center>
         ) : (
           <OrganizationChart organizations={organizations} />
         )}
       </Container>
 
-      {/* Facilities */}
-      <Container size="lg" py="xl">
-        <Title order={2} ta="center" mb="xl">교회 시설 안내</Title>
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Text size="sm" c="dimmed" ta="center" mb="lg">각 시설을 클릭하면 사진을 볼 수 있습니다</Text>
-          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-            {facilities.map((facility, index) => {
-              const iconMap: Record<string, string> = {
-                '1층 유년부실': 'ri-map-pin-line',
-                '3층 모자실': 'ri-parent-line',
-                '주차장': 'ri-car-line',
-                '식당': 'ri-restaurant-line',
-                '쉴만한물가': 'ri-cup-line'
-              };
-              const colorMap: Record<string, string> = {
-                '1층 유년부실': 'blue',
-                '3층 모자실': 'green',
-                '주차장': 'grape',
-                '식당': 'orange',
-                '쉴만한물가': 'pink'
-              };
 
-              const color = colorMap[facility.name] || 'gray';
-
-              return (
-                <Card
-                  key={facility.id}
-                  padding="sm"
-                  radius="md"
-                  onClick={() => setSelectedFacility(facility)}
-                  className="cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:-translate-y-0.5"
-                  withBorder
-                >
-                  <Group wrap="nowrap">
-                    <ThemeIcon size="lg" radius="xl" color={color} variant="light" w={48} h={48}>
-                      <i className={iconMap[facility.name] || 'ri-building-line'} style={{ fontSize: '20px' }}></i>
-                    </ThemeIcon>
-                    <Box style={{ flex: 1 }}>
-                      <Group gap="xs">
-                        <Text fw={500}>{facility.name}</Text>
-                        <i className="ri-image-line" style={{ color: '#ADB5BD', fontSize: '14px' }}></i>
-                      </Group>
-                      <Text size="sm" c="dimmed" mt={4} lineClamp={1}>{facility.description}</Text>
-                    </Box>
-                    <i className="ri-arrow-right-s-line" style={{ color: '#ADB5BD' }}></i>
-                  </Group>
-                </Card>
-              );
-            })}
-          </SimpleGrid>
-        </Card>
-      </Container>
-
-      {/* Worship Schedule */}
-      <Container size="lg" py="xl">
-        <Card shadow="sm" padding="md" radius="md" withBorder>
-          <Group justify="space-between">
-            <Group>
-              <ThemeIcon size={40} radius="xl" variant="light" color="indigo">
-                <i className="ri-calendar-line"></i>
-              </ThemeIcon>
+      {/* Facilities - Gallery Style */}
+      <Box bg="gray.0" py={120} id="facilities">
+        <Container size="xl">
+          <FadeInUp>
+            <Group justify="space-between" mb={60} align="end">
               <Box>
-                <Text fw={500}>교회 전체 예배 순서</Text>
-                <Text size="xs" c="dimmed">장전제일교회 예배 시간표</Text>
+                <Title order={2} fz={32} fw={700} style={{ letterSpacing: '-1px' }}>시설 안내</Title>
+                <Text c="dimmed" mt="xs">더 나은 예배 환경을 제공합니다</Text>
               </Box>
             </Group>
-            <Button
-              variant="light"
-              color="indigo"
-              size="xs"
-              leftSection={<i className="ri-eye-line"></i>}
-              onClick={openSchedule}
-            >
-              보기
-            </Button>
-          </Group>
-        </Card>
+          </FadeInUp>
+
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
+            {facilities.map((facility, index) => (
+              <FadeInUp key={facility.id} delay={index * 0.1}>
+                <Box
+                  className="group relative cursor-default overflow-hidden rounded-2xl"
+                  h={{ base: 240, md: 320 }}
+                >
+                  <Image
+                    src={facility.image_url || 'https://placehold.co/400x600'}
+                    alt={facility.name}
+                    h="100%"
+                    w="100%"
+                    fit="cover"
+                    className="md:group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                  />
+                  {/* Overlay: Always visible on mobile, hover on desktop */}
+                  <Box className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
+
+                  <Box className="absolute bottom-0 left-0 p-6 w-full transform translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 transition-transform duration-300">
+                    <Text c="white" fw={700} fz="lg" mb={4}>{facility.name}</Text>
+                    <Text
+                      c="gray.3"
+                      fz="sm"
+                      lineClamp={2}
+                      className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 delay-100"
+                    >
+                      {facility.description}
+                    </Text>
+                  </Box>
+                </Box>
+              </FadeInUp>
+            ))}
+          </SimpleGrid>
+        </Container>
+      </Box>
+
+      {/* Worship Schedule Banner */}
+      <Container size="md" py={{ base: 80, md: 120 }}>
+        <FadeInUp>
+          <Paper radius="xl" bg="dark" p={{ base: 'xl', md: 60 }} pos="relative" style={{ overflow: 'hidden' }}>
+            <Box className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32 hidden md:block" />
+            <Box className="absolute bottom-0 left-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl -ml-32 -mb-32 hidden md:block" />
+
+            <Stack align="center" gap="lg" pos="relative" style={{ zIndex: 1 }}>
+              <Text c="white" fw={800} fz={{ base: 24, md: 32 }}>예배 순서가 궁금하신가요?</Text>
+              <Text c="gray.4" ta="center" fz={{ base: 'sm', md: 'md' }}>장전제일교회 전체 예배 시간표를 확인하세요</Text>
+              <Button
+                variant="white"
+                color="dark"
+                size="md"
+                radius="xl"
+                onClick={openSchedule}
+                rightSection={<i className="ri-arrow-right-line"></i>}
+              >
+                예배 시간표 보기
+              </Button>
+            </Stack>
+          </Paper>
+        </FadeInUp>
       </Container>
 
-      {/* Scripture */}
-      {scripture && (
-        <Container size="lg" py="xl">
-          <Card shadow="sm" padding="xl" radius="md" withBorder style={{ textAlign: 'center' }}>
-            <Text size="lg" c="dimmed" fs="italic" mb="md" lh={1.8}>
-              {scripture.verse}
-            </Text>
-            <Text size="sm" c="dimmed" mb="md">({scripture.reference})</Text>
-            <Text fw={500} c="dark.6">
-              {scripture.description}
-            </Text>
-          </Card>
-        </Container>
-      )}
-
-      {/* Footer */}
-      <Box component="footer" py={60} ta="center" c="dimmed">
+      {/* Footer - Minimal */}
+      <Box component="footer" py={80} bg="white" style={{ borderTop: '1px solid #f1f3f5' }}>
         <Container size="lg">
-          <Stack gap="xs">
-            <Title order={3} size="h4" c="dark.8">장전제일교회</Title>
-            <Text size="sm">(46292) 부산광역시 금정구 금정로 50 (장전동)</Text>
-            <Box>
-              <Link
-                href="http://jjj.or.kr/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ fontSize: '14px', color: '#228be6', textDecoration: 'underline' }}
-              >
-                장전제일교회 홈페이지
-              </Link>
-            </Box>
-            <Text size="xs" mt="md">© 2024 예닮부</Text>
-            <Box mt="xs">
-              <Link href="/admin" style={{ fontSize: '12px', color: '#ADB5BD' }}>
-                관리자 페이지
-              </Link>
-            </Box>
-          </Stack>
+          <Center>
+            <Stack gap="xs" align="center">
+              <Text fw={700} fz="xl" style={{ letterSpacing: '-1px' }}>장전제일교회</Text>
+              <Text c="dimmed" size="sm">부산광역시 금정구 금정로 50 (장전동)</Text>
+
+              <Group gap="lg" mt="md">
+                <Link href="http://jjj.or.kr/" target="_blank" className="text-gray-500 hover:text-black transition-colors text-sm underline">
+                  교회 홈페이지
+                </Link>
+                <Link href="/admin" className="text-gray-500 hover:text-black transition-colors text-sm underline">
+                  관리자 페이지
+                </Link>
+              </Group>
+
+              <Text c="dimmed" size="xs" mt="xl">© 2024 Yedam Community. All rights reserved.</Text>
+            </Stack>
+          </Center>
         </Container>
       </Box>
 
       {/* Modals */}
 
-      {/* Facility Modal */}
-      <Modal
-        opened={openedFacility}
-        onClose={() => {
-          closeFacility();
-          setSelectedFacility(null);
-        }}
-        title={selectedFacility?.name}
-        centered
-        size="md"
-        radius="md"
-      >
-        {selectedFacility && (
-          <Box>
-            {selectedFacility.image_url && (
-              <Image
-                src={selectedFacility.image_url}
-                alt={selectedFacility.name}
-                radius="md"
-                mb="md"
-                h={200}
-                fit="cover"
-              />
-            )}
-            <Text c="dimmed" lh={1.6}>{selectedFacility.description}</Text>
-          </Box>
-        )}
-      </Modal>
-
-      {/* Worship Schedule Modal */}
-      <Modal
-        opened={openedSchedule}
-        onClose={closeSchedule}
-        title="장전제일교회 예배 순서"
-        centered
-        size="lg"
-        radius="md"
-      >
-        <Image
-          src="https://static.readdy.ai/image/2eec8f2e3fea9f0e53d55920226e61ae/2300adae0c509ef15c542ab27aaa0586.jfif"
-          alt="장전제일교회 예배 순서"
-          radius="md"
-        />
-      </Modal>
     </Box>
   );
 }
