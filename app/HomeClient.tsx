@@ -7,7 +7,10 @@ import {
     Organization,
     Scripture,
     SlideImage,
-    Facility
+    Facility,
+    getOrganization,
+    getActiveScripture,
+    getFacilities
 } from '../lib/supabase';
 import ImageSlider from '../components/ImageSlider';
 import OrganizationChart from '../components/OrganizationChart';
@@ -51,25 +54,17 @@ function FadeInUp({ children, delay = 0 }: { children: React.ReactNode; delay?: 
 }
 
 interface HomeClientProps {
-    initialOrganizations: Organization[];
-    initialScripture: Scripture | null;
     initialSlides: SlideImage[];
-    initialFacilities: Facility[];
 }
 
-export default function HomeClient({
-    initialOrganizations,
-    initialScripture,
-    initialSlides,
-    initialFacilities
-}: HomeClientProps) {
-    const [organizations, setOrganizations] = useState<Organization[]>(initialOrganizations);
-    const [scripture, setScripture] = useState<Scripture | null>(initialScripture);
+export default function HomeClient({ initialSlides }: HomeClientProps) {
+    const [organizations, setOrganizations] = useState<Organization[]>([]);
+    const [scripture, setScripture] = useState<Scripture | null>(null);
     const [slides, setSlides] = useState<SlideImage[]>(initialSlides);
-    const [facilities, setFacilities] = useState<Facility[]>(initialFacilities);
+    const [facilities, setFacilities] = useState<Facility[]>([]);
 
-    // Initialize loading to false because we have data from SSR
-    const [loading, setLoading] = useState(false);
+    // Loading state for client-side data fetching
+    const [loading, setLoading] = useState(true);
     const [isClient, setIsClient] = useState(false);
 
     // Modals state
@@ -86,9 +81,27 @@ export default function HomeClient({
         }
 
         setIsClient(true);
-        // Data is already loaded via props, so we don't need to fetch again immediately.
-        // However, if real-time updates are needed, we could fetch here.
-        // For now, relying on SSR data + revalidation is enough and cleaner.
+
+        // Fetch non-slide data client-side to reduce SSR payload
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [orgsData, scriptureData, facilitiesData] = await Promise.all([
+                    getOrganization(),
+                    getActiveScripture(),
+                    getFacilities()
+                ]);
+                setOrganizations(orgsData);
+                setScripture(scriptureData);
+                setFacilities(facilitiesData);
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
     useEffect(() => {

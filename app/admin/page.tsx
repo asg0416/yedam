@@ -29,6 +29,7 @@ import {
 } from "../../lib/supabase";
 import Link from "next/link";
 import { Loader } from "@mantine/core";
+import { revalidateHome } from "../actions";
 
 export default function AdminPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -168,6 +169,7 @@ export default function AdminPage() {
       } else {
         setSlides([...slides, result]);
       }
+      await revalidateHome();
     }
 
     setEditingSlide(null);
@@ -180,6 +182,7 @@ export default function AdminPage() {
     const success = await deleteSlideImage(id);
     if (success) {
       setSlides(slides.filter((slide) => slide.id !== id));
+      await revalidateHome();
     }
   };
 
@@ -232,6 +235,7 @@ export default function AdminPage() {
     setSlides(reorderedSlides);
     // API Call
     await updateMultipleSlideOrder(reorderedSlides);
+    await revalidateHome();
   };
 
   const handleUpdateFacilityOrder = async (reorderedFacilities: Facility[]) => {

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "export",
+  // output: "export", // Disabled to enable Server Actions for on-demand revalidation
   images: {
     loader: "custom",
     loaderFile: "./lib/imageLoader.ts",
